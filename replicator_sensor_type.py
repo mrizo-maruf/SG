@@ -1,6 +1,5 @@
 # replicator_sensor_type.py
-from omni.syntheticdata._syntheticdata import SensorType
+import omni.syntheticdata._syntheticdata as sd
 
-if __name__ == "__main__":
-    names = [m.name for m in SensorType]
-    print("Available SensorType entries:\n", "\n".join(names))
+for sensor_type in sd.SensorType:
+    print(f"Available sensor type: {sensor_type.name}")

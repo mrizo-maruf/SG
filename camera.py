@@ -15,7 +15,7 @@ from isaacsim.core.api import SimulationContext
 from isaacsim.core.utils import stage, extensions, nucleus
 import omni.graph.core as og
 import omni.replicator.core as rep
-from omni.syntheticdata._syntheticdata import SensorType
+# from omni.syntheticdata._syntheticdata import SensorType
 import omni.syntheticdata._syntheticdata as sd
 
 from isaacsim.core.utils.prims import set_targets
