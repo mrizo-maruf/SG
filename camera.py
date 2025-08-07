@@ -39,6 +39,9 @@ if assets_root_path is None:
     sys.exit()
 
 # Loading the environment
+asset_path = "/workspace/isaaclab/code_pack/scene_11_21.usd"  
+# stage. add_reference_to_stage(usd_path=asset_path, prim_path="/World/env")
+
 stage.add_reference_to_stage(assets_root_path + BACKGROUND_USD_PATH, BACKGROUND_STAGE_PATH)
 
 
@@ -235,27 +238,45 @@ def publish_instance_segmentation(camera: Camera, freq: float):
     gate_path = omni.syntheticdata.SyntheticData._get_node_path(rv + "IsaacSimulationGate", render_product)
     og.Controller.attribute(gate_path + ".inputs:step").set(step_size)
 def publish_3d_bboxes(camera: Camera, freq: float):
+    """
+    Attach a ROS2PublishBbox3D replicator writer to the camera's BoundingBox3D render product.
+    Publishes vision_msgs/Detection3DArray on <camera.name>_bbox3d at <freq> Hz.
+    """
+    # 1) get the render product path for BoundingBox3D
     render_product = camera._render_product_path
+    # 2) compute step size (Isaac sim runs at 60 Hz internally)
     step_size = int(60 / freq)
-    topic_name = camera.name + "_bbox_3d"
+    # 3) topic, queue, frame ids
+    topic_name = camera.name + "_bbox3d"
+    queue_size = 1
+    node_namespace = ""
     frame_id = camera.prim_path.split("/")[-1]
-    
-    rv = omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar(
-                            sd.SensorType.BoundingBox3D.name
-                        )
-    # Note: bbox_3d still uses the "PublishImage" writer under the hood
-    writer = rep.writers.get(rv + "ROS2PublishImage")
-    
+
+    # 4) grab the replicator writer
+    writer = rep.writers.get("ROS2PublishBbox3D")
+
+    # 5) initialize it
     writer.initialize(
         frameId=frame_id,
-        nodeNamespace="",
-        queueSize=1,
-        topicName=topic_name
+        nodeNamespace=node_namespace,
+        queueSize=queue_size,
+        topicName=topic_name,
     )
+
+    # 6) attach the render product so it will feed its data buffer
     writer.attach([render_product])
-    
-    gate_path = omni.syntheticdata.SyntheticData._get_node_path(rv + "IsaacSimulationGate", render_product)
+
+    # 7) throttle its execution to your desired freq
+    #    find the IsaacSimulationGate node upstream of your render product
+    rv = omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar(
+        sd.SensorType.BoundingBox3D.name
+    )
+    gate_path = omni.syntheticdata.SyntheticData._get_node_path(
+        rv + "IsaacSimulationGate", render_product
+    )
     og.Controller.attribute(gate_path + ".inputs:step").set(step_size)
+
+    return
 ###################################################################
 
 # Create a Camera prim. Note that the Camera class takes the position and orientation in the world axes convention.
@@ -276,6 +297,7 @@ camera.initialize()
 # Call the publishers.
 # Make sure you pasted in the helper functions above, and uncomment out the following lines before running.
 
+
 approx_freq = 30
 publish_camera_tf(camera)
 publish_camera_info(camera, approx_freq)
@@ -283,8 +305,34 @@ publish_rgb(camera, approx_freq)
 publish_depth(camera, approx_freq)
 #publish_pointcloud_from_depth(camera, approx_freq)
 publish_instance_segmentation(camera, approx_freq)
-publish_3d_bboxes(camera, approx_freq)
+# publish_3d_bboxes(camera, approx_freq)
+# publish_bbox3d(camera, approx_freq)
 ####################################################################
+
+
+# Find all the relevant objects in the scene
+cube = rep.get.prims(path="/World/your_object_name")
+
+# Assign semantics
+with cube:
+    rep.modify.semantics([("class", "cube")])
+    
+# Create or get your camera's render product
+render_product = camera._render_product_path  # Already created if you're using the Camera class
+
+# Get and attach the annotator
+bbox_annotator = rep.annotators.get("bounding_box_3d")
+bbox_annotator.attach(render_product)
+
+import asyncio
+
+async def capture_bbox_data():
+    await rep.orchestrator.step_async()
+    data = bbox_annotator.get_data()
+    print("3D Bounding Box Data:", data)
+    return data
+
+asyncio.ensure_future(capture_bbox_data())
 
 # Initialize physics
 simulation_context.initialize_physics()
