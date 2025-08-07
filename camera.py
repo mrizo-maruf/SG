@@ -12,7 +12,8 @@ simulation_app = SimulationApp(CONFIG)
 import omni
 import numpy as np
 from isaacsim.core.api import SimulationContext
-from isaacsim.core.utils import stage, extensions, nucleus
+from isaacsim.core.utils import stage, extensions
+from isaacsim.storage.native import get_assets_root_path
 import omni.graph.core as og
 import omni.replicator.core as rep
 # from omni.syntheticdata._syntheticdata import SensorType
@@ -32,7 +33,7 @@ simulation_app.update()
 simulation_context = SimulationContext(stage_units_in_meters=1.0)
 
 # Locate Isaac Sim assets folder to load environment and robot stages
-assets_root_path = nucleus.get_assets_root_path()
+assets_root_path = get_assets_root_path()
 if assets_root_path is None:
     carb.log_error("Could not find Isaac Sim assets folder")
     simulation_app.close()
@@ -305,34 +306,9 @@ publish_rgb(camera, approx_freq)
 publish_depth(camera, approx_freq)
 #publish_pointcloud_from_depth(camera, approx_freq)
 publish_instance_segmentation(camera, approx_freq)
-# publish_3d_bboxes(camera, approx_freq)
-# publish_bbox3d(camera, approx_freq)
+publish_3d_bboxes(camera, approx_freq)
 ####################################################################
 
-
-# Find all the relevant objects in the scene
-cube = rep.get.prims(path="/World/your_object_name")
-
-# Assign semantics
-with cube:
-    rep.modify.semantics([("class", "cube")])
-    
-# Create or get your camera's render product
-render_product = camera._render_product_path  # Already created if you're using the Camera class
-
-# Get and attach the annotator
-bbox_annotator = rep.annotators.get("bounding_box_3d")
-bbox_annotator.attach(render_product)
-
-import asyncio
-
-async def capture_bbox_data():
-    await rep.orchestrator.step_async()
-    data = bbox_annotator.get_data()
-    print("3D Bounding Box Data:", data)
-    return data
-
-asyncio.ensure_future(capture_bbox_data())
 
 # Initialize physics
 simulation_context.initialize_physics()

@@ -36,3 +36,4 @@
 - [ ] Use the custom scene; not from isaac sim assets
 - [ ] how to chceck visually 3d bbox are correct? How to visualize them?
 - [ ] why some ther are multiple bboxes for the same object?
+- [ ] warnings about depricated functions
