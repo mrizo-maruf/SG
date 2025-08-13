@@ -11,7 +11,7 @@ simulation_app = SimulationApp(CONFIG)
 
 
 import numpy as np
-import omni.isaac.core.utils.numpy.rotations as rot_utils
+import isaacsim.core.utils.numpy.rotations as rot_utils
 from omni.isaac.core import World
 from omni.isaac.sensor import Camera
 from isaacsim.core.utils import stage
@@ -19,7 +19,7 @@ from isaacsim.storage.native import get_assets_root_path
 import os
 import omni.replicator.core as rep
 import omni
-from omni.isaac.core.utils.rotations import euler_angles_to_quat
+from isaacsim.core.utils.rotations import euler_angles_to_quat
 import cv2
 import numpy as np
 import omni.graph.core as og
@@ -43,8 +43,6 @@ if assets_root_path is None:
 stage.add_reference_to_stage(assets_root_path + BACKGROUND_USD_PATH, BACKGROUND_STAGE_PATH)
 
 
-import omni.kit.commands
-import omni.usd
 from pxr import Sdf
 
 
@@ -133,6 +131,44 @@ def interpolate_keyframes_with_euler(keyframes, i):
 
     return next_translation, next_orientation
 
+def create_color_map(num_classes):
+    """Create a color map for any number of segmentation classes"""
+    colors = []
+    
+    # First color is black for background/unlabeled
+    colors.append([0, 0, 0])
+    
+    for i in range(1, num_classes):
+        # Generate distinct colors using golden ratio for optimal distribution
+        import colorsys
+        
+        # Use golden ratio (0.618...) for hue spacing to maximize color distinction
+        golden_ratio = 0.618033988749895
+        hue = (i * golden_ratio) % 1.0
+        
+        # Vary saturation and value to create more distinct colors
+        saturation = 0.6 + (i % 4) * 0.1  # 0.6, 0.7, 0.8, 0.9
+        value = 0.7 + (i % 3) * 0.15       # 0.7, 0.85, 1.0
+        
+        # Convert HSV to RGB
+        r, g, b = colorsys.hsv_to_rgb(hue, saturation, value)
+        colors.append([int(b*255), int(g*255), int(r*255)])  # BGR format for OpenCV
+    
+    return np.array(colors, dtype=np.uint8)
+
+def apply_color_map(seg_image, color_map):
+    """Apply color map to segmentation image"""
+    h, w = seg_image.shape
+    colored_seg = np.zeros((h, w, 3), dtype=np.uint8)
+    
+    unique_ids = np.unique(seg_image)
+    for seg_id in unique_ids:
+        if seg_id < len(color_map):
+            colored_seg[seg_image == seg_id] = color_map[seg_id]
+    
+    return colored_seg
+
+
 camera = Camera(
     prim_path="/World/Camera",
 )
@@ -182,7 +218,7 @@ translation, orientation = camera.get_world_pose(camera_axes="world")
 
 import usdrt.Sdf
 CAMERA_STAGE_PATH = "/World/Camera"
-ROS_CAMERA_GRAPH_PATH = "/ROS_Camera"
+ROS_CAMERA_GRAPH_PATH = "/ROS2_Camera"
 # Creating an on-demand push graph with cameraHelper nodes to generate ROS image publishers
 keys = og.Controller.Keys
 (ros_camera_graph, _, _, _) = og.Controller.edit(
@@ -194,9 +230,9 @@ keys = og.Controller.Keys
     {
         keys.CREATE_NODES: [
             ("OnTick", "omni.graph.action.OnTick"),
-            ("createViewport", "omni.isaac.core_nodes.IsaacCreateViewport"),
-            ("getRenderProduct", "omni.isaac.core_nodes.IsaacGetViewportRenderProduct"),
-            ("setCamera", "omni.isaac.core_nodes.IsaacSetCameraOnRenderProduct"),
+            ("createViewport", "isaacsim.core.nodes.IsaacCreateViewport"),
+            ("getRenderProduct", "isaacsim.core.nodes.IsaacGetViewportRenderProduct"),
+            ("setCamera", "isaacsim.core.nodes.IsaacSetCameraOnRenderProduct"),
         ],
         keys.CONNECT: [
             ("OnTick.outputs:tick", "createViewport.inputs:execIn"),
@@ -216,9 +252,9 @@ from omni.kit.viewport.utility import get_active_viewport
 viewport_api = get_active_viewport()
 render_product_path = viewport_api.get_render_product_path()
 
-scene_name = "nikita_scene_1"
-base_dir = f"/media/zhang/新加卷1/scene/{scene_name}/results"
-traj_dir = f"/media/zhang/新加卷1/scene/{scene_name}"
+scene_name = "warehouse"
+base_dir = f"/workspace/isaaclab/IsaacSimData/{scene_name}/results"
+traj_dir = f"/workspace/isaaclab/IsaacSimData/{scene_name}"
 os.makedirs(base_dir, exist_ok=True)
 image_prefix = "frame"
 depth_prefix = "depth"
@@ -262,7 +298,8 @@ while simulation_app.is_running() :
     
     position_, orientation_ = camera.get_local_pose(camera_axes="world")  # ros or world or usd
     transformation_matrix_result = transformation_matrix(position_, orientation_)
-    print(transformation_matrix_result)
+    # print(transformation_matrix_result)
+    print(f"Iteration: {i}")
 
     i += 1
     
@@ -291,7 +328,8 @@ while simulation_app.is_running() :
 
     img_path = os.path.join(base_dir, f"{image_prefix}{j:06d}.jpg")
     depth_path = os.path.join(base_dir, f"{depth_prefix}{j:06d}.png")
-    seg_path = os.path.join(base_dir, f"{seg_prefix}{j:06d}.png")
+    # seg_path = os.path.join(base_dir, f"{seg_prefix}{j:06d}.png")
+    seg_colored_path = os.path.join(base_dir, f"{seg_prefix}{j:06d}.png")
     seg_info_path = os.path.join(base_dir, f"{seg_prefix}{j:06d}_info.json")
 
     min_val = 0.01
@@ -301,8 +339,19 @@ while simulation_app.is_running() :
         normalized_depth = ((clipped_depth - min_val) / (max_val - min_val)) * 65535
         depth_image_uint16 = normalized_depth.astype("uint16")
         cv2.imwrite(depth_path, depth_image_uint16)
-
-        cv2.imwrite(seg_path, seg_image)
+        
+        # Create and save colored segmentation
+        # Dynamically determine number of classes from the actual segmentation data
+        max_seg_id = np.max(seg_image) if seg_image.size > 0 else 0
+        num_classes_from_seg = max_seg_id + 1
+        num_classes_from_info = len(seg_info) if seg_info else 0
+        
+        # Use the maximum to ensure we have enough colors
+        num_classes = max(num_classes_from_seg, num_classes_from_info, 1)
+        
+        color_map = create_color_map(num_classes)
+        colored_seg_image = apply_color_map(seg_image, color_map)
+        cv2.imwrite(seg_colored_path, colored_seg_image)
 
         rgb = rgba_image[:, :, :3] # you can log rbga if you want
         # image = Image.fromarray(rgb)
@@ -320,7 +369,17 @@ while simulation_app.is_running() :
             traj_file.write(transform_str + "\n")
         # Save seg_info to JSON file
         
+        # Enhanced seg_info with color mapping
+        enhanced_seg_info = {}
+        for seg_id, label in seg_info.items():
+            seg_id_int = int(seg_id)
+            enhanced_seg_info[seg_id] = {
+                "label": label,
+                "color_bgr": color_map[seg_id_int].tolist() if seg_id_int < len(color_map) else [0, 0, 0]
+            }
+        
         with open(seg_info_path, "w") as json_file:
-            json.dump(seg_info, json_file, indent=4)  # Save seg_info in JSON format
+            json.dump(enhanced_seg_info, json_file, indent=4)  # Save enhanced seg_info in JSON format
+         
     j=j+1
 simulation_app.close()

@@ -11,32 +11,32 @@ simulation_app = SimulationApp(CONFIG)
 
 import matplotlib.pyplot as plt
 import numpy as np
-import omni.isaac.core.utils.numpy.rotations as rot_utils
+import isaacsim.core.utils.numpy.rotations as rot_utils
 from omni.isaac.core import World
-from omni.isaac.core.objects import DynamicCuboid
+from isaacsim.core.api.objects import DynamicCuboid
 from omni.isaac.sensor import Camera
 from isaacsim.core.utils import stage, extensions
 from isaacsim.storage.native import get_assets_root_path
 from sensor_msgs.msg import Image
 import os
 import omni.replicator.core as rep
-import omni
-from omni.isaac.core.utils.rotations import euler_angles_to_quat, quat_to_euler_angles
-import imageio
-import cv2
+# import omni
+from isaacsim.core.utils.rotations import euler_angles_to_quat, quat_to_euler_angles
+# import imageio
+# import cv2
 import numpy as np
-from scipy.spatial.transform import Rotation
+# from scipy.spatial.transform import Rotation
 import omni.graph.core as og
 
-import rclpy
-from cv_bridge import CvBridge
+# import rclpy
+# from cv_bridge import CvBridge
 from vision_msgs.msg import Detection3DArray
 
 from omni.isaac.core_nodes.scripts.utils import set_target_prims
 
 from pxr import UsdGeom, Gf, Usd
 
-from omni.isaac.core.utils.extensions import enable_extension
+from isaacsim.core.utils.extensions import enable_extension
 
 res = enable_extension("isaacsim.ros2.bridge")
 print("*"*20, res)
