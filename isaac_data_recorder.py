@@ -4,6 +4,7 @@ from isaacsim import SimulationApp
 import sys
 
 BACKGROUND_STAGE_PATH = "/background"
+# BACKGROUND_USD_PATH = "/workspace/isaaclab/SG/scene_optimized.usd"
 BACKGROUND_USD_PATH = "/Isaac/Environments/Simple_Warehouse/warehouse_with_forklifts.usd"
 
 CONFIG = {"renderer": "RayTracedLighting", "headless": True, "hide_ui": False}
@@ -200,9 +201,9 @@ stage = get_current_stage()
 # (3.5, 3) is center, the height of object read is 1 meter
 keyframes_move = [
     {'time': 0, 'translation': [0, 3, 2.2], 'euler_angles': [0, 15, -45]},
-    {'time': 20, 'translation': [5.5, 3, 2.2], 'euler_angles': [0, 15, -120]},
-    {'time': 30, 'translation': [-5, 3, 2.2], 'euler_angles': [0, 15, -200]},
-    {'time': 50, 'translation': [-5, 8, 2.2], 'euler_angles': [0, 15, -280]},
+    {'time': 5, 'translation': [5.5, 3, 2.2], 'euler_angles': [0, 15, -120]},
+    {'time': 10, 'translation': [-5, 3, 2.2], 'euler_angles': [0, 15, -200]},
+    {'time': 15, 'translation': [-5, 8, 2.2], 'euler_angles': [0, 15, -280]},
     # {'time': 500, 'translation': [-1.3, 0, 1.5], 'euler_angles': [0, 0, 290]},
     # {'time': 750, 'translation': [-1.3, 0, 1.5], 'euler_angles': [0, 0, 70]},
     # {'time': 850, 'translation': [-1.3, 0, 1.5], 'euler_angles': [0, 30, 70]},
