@@ -32,6 +32,15 @@
  ./isaaclab.sh -p ./isaac_sim/data_saver.py
 ```
 
+4. To run just to get bbq images/frames
+```
+ ./isaaclab.sh -p ./isaac_sim/isaac_data_recorder.py
+```
+
+### About Camera inside isaac sim
+- To camera you should give position, orientation.
+- Every new position comes with original orientation
+
 ### Future to do
 - [ ] Use the custom scene; not from isaac sim assets
 - [ ] how to chceck visually 3d bbox are correct? How to visualize them?

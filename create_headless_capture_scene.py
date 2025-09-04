@@ -186,8 +186,10 @@ rep_seg_annotator   = rep.AnnotatorRegistry.get_annotator("semantic_segmentation
 # Keyframes (kept from your original file)
 keyframes_move = [
     {'time': 0, 'translation': [0, 1.7, 2], 'euler_angles': [0, 30, -90]},
-    {'time': 5, 'translation': [2, 0, 2.2], 'euler_angles': [0, 30, -180]},
-    # {'time': 10, 'translation': [0, -2, 2.2], 'euler_angles': [0, 30, -240]},
+    {'time': 3, 'translation': [0, 3, 2], 'euler_angles': [0, 30, -90]},
+    {'time': 6, 'translation': [2, 0, 2.2], 'euler_angles': [0, 30, -180]},
+    {'time': 9, 'translation': [4, 0, 2.2], 'euler_angles': [0, 30, -180]},
+    {'time': 12, 'translation': [0, -2, 2.2], 'euler_angles': [0, 30, -240]},
 ]
 
 def interpolate_keyframes_with_euler(keyframes, t):
@@ -293,7 +295,7 @@ while simulation_app.is_running() and frame < max_frames:
     camera.set_local_pose(trans, quat, camera_axes="world")
 
     # step a few times so annotators have fresh renders
-    for _ in range(100):
+    for _ in range(50):
         world.step(render=True)
     simulation_app.update()
 

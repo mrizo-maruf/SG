@@ -200,15 +200,15 @@ stage = get_current_stage()
 
 # (3.5, 3) is center, the height of object read is 1 meter
 keyframes_move = [
-    {'time': 0, 'translation': [0, 3, 2.2], 'euler_angles': [0, 15, -45]},
-    {'time': 5, 'translation': [5.5, 3, 2.2], 'euler_angles': [0, 15, -120]},
-    {'time': 10, 'translation': [-5, 3, 2.2], 'euler_angles': [0, 15, -200]},
-    {'time': 15, 'translation': [-5, 8, 2.2], 'euler_angles': [0, 15, -280]},
-    # {'time': 500, 'translation': [-1.3, 0, 1.5], 'euler_angles': [0, 0, 290]},
-    # {'time': 750, 'translation': [-1.3, 0, 1.5], 'euler_angles': [0, 0, 70]},
-    # {'time': 850, 'translation': [-1.3, 0, 1.5], 'euler_angles': [0, 30, 70]},
-    # {'time': 1100, 'translation': [-1.3, 0, 1.5], 'euler_angles': [0, 30, 290]},
-    # {'time': 1300, 'translation': [-1.3, 0, 2.5], 'euler_angles': [0, 90, 180]},
+    {'time': 0, 'translation': [5, 4, 2.2], 'euler_angles': [0, 15, -90]},
+    {'time': 6, 'translation': [8.2, -3, 2.2], 'euler_angles': [0, 15, -180]},
+    {'time': 12, 'translation': [3.5, -6.3, 2.2], 'euler_angles': [0, 15, -280]},
+    {'time': 18, 'translation': [-5.4, -7.2, 2.2], 'euler_angles': [0, 15, -240]},
+    {'time': 21, 'translation': [-2, -3, 2.2], 'euler_angles': [0, 15, -180]},
+    {'time': 24, 'translation': [-5, 1, 2.2], 'euler_angles': [0, 15, -120]},
+    {'time': 27, 'translation': [-3, 5, 2.2], 'euler_angles': [0, 15, -180]},
+    {'time': 30, 'translation': [-7.5, 10, 2.2], 'euler_angles': [0, 15, -270]},
+    {'time': 33, 'translation': [-1.5, 12, 2.2], 'euler_angles': [0, 15, -200]},
 ]
 
 # Select one floor or interior of elevator for recording
@@ -304,8 +304,11 @@ while simulation_app.is_running() :
 
     i += 1
     
-    for k in range(10):
+    # for better rendering
+    for k in range(100):
         my_world.step(render=True)
+    
+    simulation_app.update()
 
     viewport_api = get_active_viewport()
     render_product_path = viewport_api.get_render_product_path()
