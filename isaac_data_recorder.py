@@ -189,26 +189,50 @@ camera.set_local_pose(np.array([3, 0, 1.5]), rot_utils.euler_angles_to_quats(np.
 camera_prim= stage.GetPrimAtPath("/World/Camera")
 focal_length = camera_prim.GetAttribute("focalLength")
 horizontal_aperture = camera_prim.GetAttribute("horizontalAperture")
-# get value
-print("focal length:", focal_length.Get())
-print("horizontal aperture:", horizontal_aperture.Get())
+vectical_aperture = camera_prim.GetAttribute("verticalAperture")
 # # set value
 # focal_length.Set(10.0)
 horizontal_aperture.Set(80)  # 60 --> fx: 1066.667    fy: 1066.667     cx: 640.0    cy: 360.0
 
 stage = get_current_stage()
 
+# get value
+print("focal length:", focal_length.Get())
+print("horizontal aperture:", horizontal_aperture.Get())
+print("vectical aperture:", vectical_aperture.Get())
+
+resolution_attr = camera_prim.GetAttribute('resolution')
+if resolution_attr is not None:
+    res = resolution_attr.Get()
+    # img_w, img_h = res[0], res[1]
+
+# print(f'Camera resolution: img w: {img_w} img h: {img_h}')
+# print(f'Camera resolution: {camera._width, camera._height}')
+
+
 # (3.5, 3) is center, the height of object read is 1 meter
+# keyframes_move = [
+#     {'time': 0, 'translation': [5, 4, 2.2], 'euler_angles': [0, 15, -90]},
+#     {'time': 6, 'translation': [8.2, -3, 2.2], 'euler_angles': [0, 15, -180]},
+#     {'time': 12, 'translation': [3.5, -6.3, 2.2], 'euler_angles': [0, 15, -280]},
+#     {'time': 18, 'translation': [-5.4, -7.2, 2.2], 'euler_angles': [0, 15, -240]},
+#     {'time': 21, 'translation': [-2, -3, 2.2], 'euler_angles': [0, 15, -180]},
+#     {'time': 24, 'translation': [-5, 1, 2.2], 'euler_angles': [0, 15, -120]},
+#     {'time': 27, 'translation': [-3, 5, 2.2], 'euler_angles': [0, 15, -180]},
+#     {'time': 30, 'translation': [-7.5, 10, 2.2], 'euler_angles': [0, 15, -270]},
+#     {'time': 33, 'translation': [-1.5, 12, 2.2], 'euler_angles': [0, 15, -200]},
+# ]
+
 keyframes_move = [
     {'time': 0, 'translation': [5, 4, 2.2], 'euler_angles': [0, 15, -90]},
-    {'time': 6, 'translation': [8.2, -3, 2.2], 'euler_angles': [0, 15, -180]},
-    {'time': 12, 'translation': [3.5, -6.3, 2.2], 'euler_angles': [0, 15, -280]},
-    {'time': 18, 'translation': [-5.4, -7.2, 2.2], 'euler_angles': [0, 15, -240]},
-    {'time': 21, 'translation': [-2, -3, 2.2], 'euler_angles': [0, 15, -180]},
-    {'time': 24, 'translation': [-5, 1, 2.2], 'euler_angles': [0, 15, -120]},
-    {'time': 27, 'translation': [-3, 5, 2.2], 'euler_angles': [0, 15, -180]},
-    {'time': 30, 'translation': [-7.5, 10, 2.2], 'euler_angles': [0, 15, -270]},
-    {'time': 33, 'translation': [-1.5, 12, 2.2], 'euler_angles': [0, 15, -200]},
+    {'time': 20, 'translation': [8.2, -3, 2.2], 'euler_angles': [0, 15, -180]},
+    {'time': 40, 'translation': [3.5, -6.3, 2.2], 'euler_angles': [0, 15, -280]},
+    {'time': 60, 'translation': [-5.4, -7.2, 2.2], 'euler_angles': [0, 15, -240]},
+    {'time': 80, 'translation': [-2, -3, 2.2], 'euler_angles': [0, 15, -180]},
+    {'time': 100, 'translation': [-5, 1, 2.2], 'euler_angles': [0, 15, -120]},
+    {'time': 120, 'translation': [-3, 5, 2.2], 'euler_angles': [0, 15, -180]},
+    {'time': 140, 'translation': [-7.5, 10, 2.2], 'euler_angles': [0, 15, -270]},
+    {'time': 160, 'translation': [-1.5, 12, 2.2], 'euler_angles': [0, 15, -200]},
 ]
 
 # Select one floor or interior of elevator for recording
@@ -305,13 +329,14 @@ while simulation_app.is_running() :
     i += 1
     
     # for better rendering
-    for k in range(100):
+    for k in range(20):
         my_world.step(render=True)
     
     simulation_app.update()
 
     viewport_api = get_active_viewport()
     render_product_path = viewport_api.get_render_product_path()
+    
 
     depth_annotators = rep.AnnotatorRegistry.get_annotator("distance_to_image_plane") # distance_to_image_plane  distance_to_camera
     # depth_annotators.attach([camera._render_product_path])
@@ -321,6 +346,9 @@ while simulation_app.is_running() :
     rgb_annotators = rep.AnnotatorRegistry.get_annotator("LdrColor")
     rgb_annotators.attach([render_product_path])
     rgba_image = rgb_annotators.get_data()
+    
+    # print(f"image w: {image_w}, image_h: {image_h}")
+    print(f"img shape: {rgba_image.shape}")
 
     seg_annotators = rep.AnnotatorRegistry.get_annotator("semantic_segmentation")
     seg_annotators.attach([render_product_path])
@@ -337,7 +365,7 @@ while simulation_app.is_running() :
     seg_info_path = os.path.join(base_dir, f"{seg_prefix}{j:06d}_info.json")
 
     min_val = 0.01
-    max_val = 10.0
+    max_val = 20
     if depth_image.size!=0 and rgba_image.size!=0:
         clipped_depth = np.clip(depth_image, min_val, max_val)
         normalized_depth = ((clipped_depth - min_val) / (max_val - min_val)) * 65535
