@@ -1,0 +1,107 @@
+# VS Code
+.vscode/
+*.code-workspace
+
+# Python bytecode and cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.env
+.venv
+venv/
+env/
+.conda/
+.python-version
+
+# Packaging / build artifacts
+build/
+dist/
+*.egg-info/
+.eggs/
+pip-wheel-metadata/
+wheels/
+
+# Test / coverage / lint / typing
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+.mypy_cache/
+.pyre/
+.pytype/
+.dmypy.json
+.ruff_cache/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Logs and OS junk
+*.log
+logs/
+.DS_Store
+Thumbs.db
+
+# JetBrains
+.idea/
+
+# ROS 2 (colcon) builds
+install/
+log/
+```// filepath: /home/rizo/mipt_ccm/SG/.gitignore
+# VS Code
+.vscode/
+*.code-workspace
+
+# Python bytecode and cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.env
+.venv
+venv/
+env/
+.conda/
+.python-version
+
+# Packaging / build artifacts
+build/
+dist/
+*.egg-info/
+.eggs/
+pip-wheel-metadata/
+wheels/
+
+# Test / coverage / lint / typing
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+.mypy_cache/
+.pyre/
+.pytype/
+.dmypy.json
+.ruff_cache/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Logs and OS junk
+*.log
+logs/
+.DS_Store
+Thumbs.db
+
+# JetBrains
+.idea/
+
+# ROS 2 (colcon) builds
+install/
+log/
