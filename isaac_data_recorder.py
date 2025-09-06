@@ -19,6 +19,7 @@ MAX_DEPTH = 10.0  # meters
 PNG_MAX_VALUE = 65535  # 16-bit depth image
 FOCAL_LENGTH = 50
 HORIZONTAL_APARTURE = 80
+VERTICAL_APARTURE = 45
 # Warm-up steps before recording (improves stability)
 WARMUP_STEPS = 50
 RENDER_SUBSTEPS = 100  # inner steps per saved frame for better visuals
@@ -124,7 +125,7 @@ def apply_color_map(seg_image, color_map):
 def compute_intrinsics(camera_prim, width, height):
     focal_length_attr = camera_prim.GetAttribute("focalLength").Get()
     h_aperture_attr = camera_prim.GetAttribute("horizontalAperture").Get()
-    camera_prim.GetAttribute("verticalAperture").Set(45.0)
+    camera_prim.GetAttribute("verticalAperture").Set(VERTICAL_APARTURE)
     v_aperture_attr = camera_prim.GetAttribute("verticalAperture").Get()
     
 
@@ -192,6 +193,10 @@ keyframes_move = [
     {'time': 12, 'translation': [3.5, -6.3, 2.2], 'euler_angles': [0, 15, -280]},
     {'time': 18, 'translation': [-5.4, -7.2, 2.2], 'euler_angles': [0, 15, -240]},
     {'time': 21, 'translation': [-2, -3, 2.2], 'euler_angles': [0, 15, -180]},
+    {'time': 24, 'translation': [-5, 1, 2.2], 'euler_angles': [0, 15, -120]},
+    {'time': 27, 'translation': [-3, 5, 2.2], 'euler_angles': [0, 15, -180]},
+    {'time': 30, 'translation': [-7.5, 10, 2.2], 'euler_angles': [0, 15, -270]},
+    {'time': 33, 'translation': [-1.5, 12, 2.2], 'euler_angles': [0, 15, -200]},
 ]
 record_keyframe = keyframes_move
 

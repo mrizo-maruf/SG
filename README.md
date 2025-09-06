@@ -16,6 +16,20 @@ Captures a synchronized dataset (RGB, depth, semantic segmentation, camera traje
   - Camera extrinsic matrix per frame (ROS frame) in `traj.txt`
 - Computes and prints camera intrinsics (fx, fy, cx, cy) and depth scale each run.
 
+### Camera Intrinsics
+* fx: 800.000
+* fy: 800.000
+* cx: 640.000
+* cy: 360.000
+* horizontal aperture: 80.0
+* vertical aperture: 45.0
+* focal length: 50
+* IMAGE_WIDTH = 1280
+* IMAGE_HEIGHT = 720
+* MIN_DEPTH = 0.01
+* MAX_DEPTH = 10.0  # meters
+* PNG_MAX_VALUE = 65535  # 16-bit depth image
+
 ### How it works (flow)
 1. Initialize SimulationApp (headless optional) + enable ROS2 bridge.
 2. Load environment via USD reference; add ground plane.
