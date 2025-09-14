@@ -6,7 +6,7 @@ import sys
 # ---------------------- Configuration ----------------------
 BACKGROUND_STAGE_PATH = "/background"
 # BACKGROUND_USD_PATH = "/workspace/isaaclab/SG/scene_optimized.usd"
-BACKGROUND_USD_PATH = "/Isaac/Environments/Simple_Warehouse/warehouse_with_forklifts.usd"
+BACKGROUND_USD_PATH = "/isaac-sim/SG/aloha_assets/scene_3ch_1t.usd"
 
 CONFIG = {"renderer": "RayTracedLighting", "headless": True, "hide_ui": False}
 simulation_app = SimulationApp(CONFIG)

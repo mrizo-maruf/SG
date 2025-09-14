@@ -105,3 +105,5 @@ Thumbs.db
 # ROS 2 (colcon) builds
 install/
 log/
+
+*.png
