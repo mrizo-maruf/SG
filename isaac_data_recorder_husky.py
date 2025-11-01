@@ -5,8 +5,8 @@ import sys
 
 # ---------------------- Configuration ----------------------
 BACKGROUND_STAGE_PATH = "/World/env"
-scene_name = "Franka-Peg-In-Hole"
-BACKGROUND_USD_PATH = "/workspace/isaaclab/SG/HuskyLab_assets/Franka-Peg-In-Hole.usd"
+scene_name = "nk_scene_complex"
+BACKGROUND_USD_PATH = f"/workspace/isaaclab/IsaacSimData/NK_scenes/{scene_name}.usd"
 
 CONFIG = {"renderer": "RayTracedLighting", "headless": True, "hide_ui": False}
 simulation_app = SimulationApp(CONFIG)
@@ -20,6 +20,7 @@ PNG_MAX_VALUE = 65535  # 16-bit depth image
 FOCAL_LENGTH = 50
 HORIZONTAL_APARTURE = 80
 VERTICAL_APARTURE = 45
+
 # Warm-up steps before recording (improves stability)
 WARMUP_STEPS = 50
 RENDER_SUBSTEPS = 100  # inner steps per saved frame for better visuals
@@ -189,36 +190,30 @@ print("afeter focal length:", focal_length.Get())
 
 # ---------------------- Keyframes ----------------------
 keyframes_move = [
-    {'time': 0, 'translation': [3, -2, 1], 'euler_angles': [0, 25, 125]},
-    {'time': 6, 'translation': [3, 2, 1], 'euler_angles': [0, 25, 225]},
-    {'time': 12, 'translation': [-1.7, 1.7, 1], 'euler_angles': [0, 25, 315]},
-    {'time': 18, 'translation': [-1.7, -1.7, 1], 'euler_angles': [0, 25, 380]},
-    {'time': 22, 'translation': [0, 0, 2.5], 'euler_angles': [0, 90, 0]},
-    {'time': 27, 'translation': [0, -1.7, 1.5], 'euler_angles': [0, 30, 90]},
-    {'time': 32, 'translation': [1.7, -1.7, 1.5], 'euler_angles': [0, 30, 125]},
-    {'time': 37, 'translation': [1.7, 0, 1.5], 'euler_angles': [0, 30, 180]},
-    {'time': 42, 'translation': [1.7, 0.8, 1.5], 'euler_angles': [0, 30, 210]},
-    {'time': 47, 'translation': [0, 1.7, 1.5], 'euler_angles': [0, 30, 270]},
+    # {'time': 0, 'translation': [-3, -2, 1], 'euler_angles': [0, 20, 30]},
+    # {'time': 10, 'translation': [0, -2, 1], 'euler_angles': [0, 20, 60]},
+    # {'time': 20, 'translation': [1, -2, 1], 'euler_angles': [0, 20, 90]},
+    # {'time': 30, 'translation': [1, 0, 3], 'euler_angles': [0, 90, 0]},
+    # {'time': 40, 'translation': [1, 0, 3], 'euler_angles': [0, 55, 0]},
+    # {'time': 50, 'translation': [1, 0, 3], 'euler_angles': [0, 55, 60]},
+    # {'time': 60, 'translation': [1, 0, 3], 'euler_angles': [0, 55, 120]},
+    # {'time': 70, 'translation': [1, 0, 3], 'euler_angles': [0, 55, 180]},
+    # {'time': 80, 'translation': [1, 0, 3], 'euler_angles': [0, 55, 240]},
+    # {'time': 90, 'translation': [1, 0, 3], 'euler_angles': [0, 55, 360]},
     
-    # {'time': 0, 'translation': [3, -2, 1], 'euler_angles': [0, 25, 125]},
-    # {'time': 6, 'translation': [3, 2, 1], 'euler_angles': [0, 25, 225]},
-    # {'time': 12, 'translation': [-1.7, 1.7, 1], 'euler_angles': [0, 25, 315]},
-    # {'time': 18, 'translation': [-1.7, -1.7, 1], 'euler_angles': [0, 25, 380]},
-    # {'time': 22, 'translation': [0, 0, 2.5], 'euler_angles': [0, 90, 0]},
-    # {'time': 27, 'translation': [0, -2, 2], 'euler_angles': [0, 30, 90]},
-    # {'time': 32, 'translation': [1.5, -2.5, 1.7], 'euler_angles': [0, 30, 125]},
-    # {'time': 37, 'translation': [1.5, 0, 1.7], 'euler_angles': [0, 30, 180]},
-    # {'time': 42, 'translation': [2, 0, 1.7], 'euler_angles': [0, 30, 180]},
-    # {'time': 47, 'translation': [0, 2.5, 1.7], 'euler_angles': [0, 30, 270]},
-
+    # {'time': 0, 'translation': [4.5, 4, 1.5], 'euler_angles': [0, 20, 0]},
+    # {'time': 7, 'translation': [4.5, 4, 1.5], 'euler_angles': [0, 20, 60]},
+    # {'time': 14, 'translation': [4.5, 4, 1.5], 'euler_angles': [0, 20, 120]},
+    # {'time': 21, 'translation': [4.5, 4, 1.5], 'euler_angles': [0, 20, 180]},
+    # {'time': 27, 'translation': [4.5, 4, 1.5], 'euler_angles': [0, 20, 240]},
+    # {'time': 42, 'translation': [4.5, 4, 1.5], 'euler_angles': [0, 20, 360]},
     
-    # {'time': 12, 'translation': [3.5, -6.3, 2.2], 'euler_angles': [0, 15, -280]},
-    # {'time': 18, 'translation': [-5.4, -7.2, 2.2], 'euler_angles': [0, 15, -240]},
-    # {'time': 21, 'translation': [-2, -3, 2.2], 'euler_angles': [0, 15, -180]},
-    # {'time': 24, 'translation': [-5, 1, 2.2], 'euler_angles': [0, 15, -120]},
-    # {'time': 27, 'translation': [-3, 5, 2.2], 'euler_angles': [0, 15, -180]},
-    # {'time': 30, 'translation': [-7.5, 10, 2.2], 'euler_angles': [0, 15, -270]},
-    # {'time': 33, 'translation': [-1.5, 12, 2.2], 'euler_angles': [0, 15, -200]},
+    {'time': 0, 'translation': [0, 4, 1.5], 'euler_angles': [0, 20, 0]},
+    {'time': 10, 'translation': [4.5, 4, 1.5], 'euler_angles': [0, 20, 20]},
+    {'time': 20, 'translation': [6.5, 6, 1.5], 'euler_angles': [0, 20, -40]},
+    {'time': 30, 'translation': [7, 5, 1.5], 'euler_angles': [0, 20, -40]},
+    
+    # {'time': 30, 'translation': [1, 0, 1.5], 'euler_angles': [0, 90, 0]},
 ]
 record_keyframe = keyframes_move
 
@@ -309,16 +304,16 @@ while simulation_app.is_running():
     rgb_ann.attach([render_product_path])
     rgba_image = rgb_ann.get_data()
 
-    seg_ann = rep.AnnotatorRegistry.get_annotator("semantic_segmentation")
-    seg_ann.attach([render_product_path])
-    seg_data = seg_ann.get_data()
-    seg_info = seg_data['info']['idToLabels']
-    seg_image = seg_data['data'].astype(np.uint8)
+    # seg_ann = rep.AnnotatorRegistry.get_annotator("semantic_segmentation")
+    # seg_ann.attach([render_product_path])
+    # seg_data = seg_ann.get_data()
+    # seg_info = seg_data['info']['idToLabels']
+    # seg_image = seg_data['data'].astype(np.uint8)
 
     img_path = os.path.join(base_dir, f"{image_prefix}{frame_index:06d}.jpg")
     depth_path = os.path.join(base_dir, f"{depth_prefix}{frame_index:06d}.png")
-    seg_colored_path = os.path.join(base_dir, f"{seg_prefix}{frame_index:06d}.png")
-    seg_info_path = os.path.join(base_dir, f"{seg_prefix}{frame_index:06d}_info.json")
+    # seg_colored_path = os.path.join(base_dir, f"{seg_prefix}{frame_index:06d}.png")
+    # seg_info_path = os.path.join(base_dir, f"{seg_prefix}{frame_index:06d}_info.json")
 
     if depth_image.size != 0 and rgba_image.size != 0:
         clipped_depth = np.clip(depth_image, MIN_DEPTH, MAX_DEPTH)
@@ -326,11 +321,11 @@ while simulation_app.is_running():
         depth_image_uint16 = normalized_depth.astype("uint16")
         cv2.imwrite(depth_path, depth_image_uint16)
 
-        max_seg_id = np.max(seg_image) if seg_image.size > 0 else 0
-        num_classes = max(max_seg_id + 1, len(seg_info) if seg_info else 0, 1)
-        color_map = create_color_map(num_classes)
-        colored_seg_image = apply_color_map(seg_image, color_map)
-        cv2.imwrite(seg_colored_path, colored_seg_image)
+        # max_seg_id = np.max(seg_image) if seg_image.size > 0 else 0
+        # num_classes = max(max_seg_id + 1, len(seg_info) if seg_info else 0, 1)
+        # color_map = create_color_map(num_classes)
+        # colored_seg_image = apply_color_map(seg_image, color_map)
+        # cv2.imwrite(seg_colored_path, colored_seg_image)
 
         rgb = rgba_image[:, :, :3]
         bgr = cv2.cvtColor(rgb, cv2.COLOR_RGB2BGR)
@@ -341,15 +336,15 @@ while simulation_app.is_running():
         with open(traj_file_path, "a") as traj_file:
             traj_file.write(' '.join(map(str, T_ros.flatten())) + "\n")
 
-        enhanced_seg_info = {}
-        for seg_id, label in seg_info.items():
-            seg_id_int = int(seg_id)
-            enhanced_seg_info[seg_id] = {
-                "label": label,
-                "color_bgr": color_map[seg_id_int].tolist() if seg_id_int < len(color_map) else [0, 0, 0]
-            }
-        with open(seg_info_path, "w") as json_file:
-            json.dump(enhanced_seg_info, json_file, indent=4)
+        # enhanced_seg_info = {}
+        # for seg_id, label in seg_info.items():
+        #     seg_id_int = int(seg_id)
+        #     enhanced_seg_info[seg_id] = {
+        #         "label": label,
+        #         "color_bgr": color_map[seg_id_int].tolist() if seg_id_int < len(color_map) else [0, 0, 0]
+        #     }
+        # with open(seg_info_path, "w") as json_file:
+        #     json.dump(enhanced_seg_info, json_file, indent=4)
 
     frame_index += 1
 

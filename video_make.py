@@ -38,7 +38,7 @@ def frames_to_video(frames_dir, output_path, fps=30):
     print(f"✅ Video saved at {output_path}")
 
 if __name__ == "__main__":
-    frames_dir = "/home/maribjonov_mr/IsaacSimData/warehouse/results"
-    output_path = "/home/maribjonov_mr/IsaacSimData/warehouse"  # can be dir or file
-    fps=  30
+    frames_dir = "/workspace/isaaclab/IsaacSimData/UR5-Peg-In-Hole_02/results"
+    output_path = "/workspace/isaaclab/IsaacSimData/UR5-Peg-In-Hole_02"  # can be dir or file
+    fps=  10
     frames_to_video(frames_dir, output_path, fps)

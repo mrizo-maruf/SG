@@ -1,0 +1,83 @@
+{
+    "version": "1.0",
+    "file_records": [
+        {
+            "source_url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5/Isaac/Props/Blocks/DexCube/Materials/dex_cube_mod.png",
+            "source_hash": "67c93a143deea5ac863a530e421f7f773237b007",
+            "target_url": "./SubUSDs/textures/dex_cube_mod.png",
+            "target_hash": "77aa97d18564ddbcc2e07b880bde7a14e3cd6d49"
+        },
+        {
+            "source_url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5/Isaac/Samples/Examples/FrankaNutBolt/SubUSDs/Shop_Table/textures/aluminum_feet_basecolor.png",
+            "source_hash": "694e1d160304a6e2a57fe01dad1532ede5f54270",
+            "target_url": "./SubUSDs/textures/aluminum_feet_basecolor.png",
+            "target_hash": "405077afe3769e0a025b123fe9c068348cf75da7"
+        },
+        {
+            "source_url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5/Isaac/Samples/Examples/FrankaNutBolt/SubUSDs/Shop_Table/textures/aluminum_feet_normal.png",
+            "source_hash": "0b05514e165d124b2694ef53e6f3e01cb1e88115",
+            "target_url": "./SubUSDs/textures/aluminum_feet_normal.png",
+            "target_hash": "957390a46c2522bbbe356b02c9500d8c516804a3"
+        },
+        {
+            "source_url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5/Isaac/Samples/Examples/FrankaNutBolt/SubUSDs/Shop_Table/textures/aluminum_feet_roughness.png",
+            "source_hash": "c44777628fdb1b0295c4307a990783e24f71401e",
+            "target_url": "./SubUSDs/textures/aluminum_feet_roughness.png",
+            "target_hash": "4172cb279549e3f0ea7c1f8a19e52c3651f49e19"
+        },
+        {
+            "source_url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5/Isaac/Samples/Examples/FrankaNutBolt/SubUSDs/Shop_Table/textures/metal_tabletop_basecolor.png",
+            "source_hash": "29b6054f60fe1a60b36c1329e305fc451e13b418",
+            "target_url": "./SubUSDs/textures/metal_tabletop_basecolor.png",
+            "target_hash": "ac0c66663dcbc4ddaa727eea97fbdfc29bed1d6f"
+        },
+        {
+            "source_url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5/Isaac/Samples/Examples/FrankaNutBolt/SubUSDs/Shop_Table/textures/metal_tabletop_metallic.png",
+            "source_hash": "72449478d1b20024cbb2fa9a7f303d5404c7c141",
+            "target_url": "./SubUSDs/textures/metal_tabletop_metallic.png",
+            "target_hash": "3ac102075742e88913f9f9ac6a9c5ac5f45709cd"
+        },
+        {
+            "source_url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5/Isaac/Samples/Examples/FrankaNutBolt/SubUSDs/Shop_Table/textures/metal_tabletop_normal.png",
+            "source_hash": "667167a2fd9957ed5633b7f0231e0e520798a85f",
+            "target_url": "./SubUSDs/textures/metal_tabletop_normal.png",
+            "target_hash": "c2512a8f4c71f5736e49e96ff0595e8526692059"
+        },
+        {
+            "source_url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5/Isaac/Samples/Examples/FrankaNutBolt/SubUSDs/Shop_Table/textures/metal_tabletop_roughness.png",
+            "source_hash": "77559abaacc792d9fa0099c171de08ccf07e3df4",
+            "target_url": "./SubUSDs/textures/metal_tabletop_roughness.png",
+            "target_hash": "38948377d52ace38c90dc139175f8cfe756ac4e8"
+        },
+        {
+            "source_url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5/Isaac/Samples/Examples/FrankaNutBolt/SubUSDs/Shop_Table/textures/steel_orange_basecolor.png",
+            "source_hash": "33a9ed66646b749153dc5c2368795e4e3fa461d0",
+            "target_url": "./SubUSDs/textures/steel_orange_basecolor.png",
+            "target_hash": "a28a755e2bd8460c7818dcced7d9fa439fed851b"
+        },
+        {
+            "source_url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5/Isaac/Samples/Examples/FrankaNutBolt/SubUSDs/Shop_Table/textures/steel_orange_metallic.png",
+            "source_hash": "77d8ee49c87ef1039ea6343c3f0a30a49db32071",
+            "target_url": "./SubUSDs/textures/steel_orange_metallic.png",
+            "target_hash": "b36887cd155ce334715ee81c46b9cfd5e6c1df02"
+        },
+        {
+            "source_url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5/Isaac/Samples/Examples/FrankaNutBolt/SubUSDs/Shop_Table/textures/steel_orange_normal.png",
+            "source_hash": "ae918e30e03f922b6abb1eb25def325e6032e41e",
+            "target_url": "./SubUSDs/textures/steel_orange_normal.png",
+            "target_hash": "63c14b05f6e9563ef1a9f76467ea2306357dfeb2"
+        },
+        {
+            "source_url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5/Isaac/Samples/Examples/FrankaNutBolt/SubUSDs/Shop_Table/textures/steel_orange_roughness.png",
+            "source_hash": "5ede0105ee63f2774ad86104b103b434919b6e4b",
+            "target_url": "./SubUSDs/textures/steel_orange_roughness.png",
+            "target_hash": "2fc7c5d11217aa0330607f9f79500fde12d25551"
+        },
+        {
+            "source_url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5/Isaac/Samples/Examples/FrankaNutBolt/SubUSDs/Shop_Table/textures/vibrationtable_base_basecolor.png",
+            "source_hash": "79b11acfb33eadb370c5450d2c76bc843ede01db",
+            "target_url": "./SubUSDs/textures/vibrationtable_base_basecolor.png",
+            "target_hash": "faaab5aca8d1c69406963e2a2e41a67d5083178f"
+        }
+    ]
+}
