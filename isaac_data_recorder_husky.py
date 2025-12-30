@@ -5,8 +5,8 @@ import sys
 
 # ---------------------- Configuration ----------------------
 BACKGROUND_STAGE_PATH = "/World/env"
-scene_name = "nk_scene_complex"
-BACKGROUND_USD_PATH = f"/workspace/isaaclab/IsaacSimData/NK_scenes/{scene_name}.usd"
+scene_name = "scene_6"
+BACKGROUND_USD_PATH = f"/workspace/isaaclab/SG/for_eval/{scene_name}.usd"
 
 CONFIG = {"renderer": "RayTracedLighting", "headless": True, "hide_ui": False}
 simulation_app = SimulationApp(CONFIG)
@@ -59,6 +59,7 @@ if assets_root_path is None:
     simulation_app.close()
     sys.exit()
     
+# add_reference_to_stage(usd_path=BACKGROUND_USD_PATH, prim_path=BACKGROUND_STAGE_PATH)
 add_reference_to_stage(usd_path=BACKGROUND_USD_PATH, prim_path=BACKGROUND_STAGE_PATH)
 
 # ---------------------- Utility Functions ----------------------
@@ -148,6 +149,143 @@ def compute_intrinsics(camera_prim, width, height):
     cy = height / 2.0
     return fx, fy, cx, cy
 
+import json
+import numpy as np
+from collections import defaultdict
+
+def _to_py(obj):
+    """Make numpy types JSON-serializable."""
+    if isinstance(obj, (np.integer,)):
+        return int(obj)
+    if isinstance(obj, (np.floating,)):
+        return float(obj)
+    if isinstance(obj, (np.ndarray,)):
+        return obj.tolist()
+    if isinstance(obj, dict):
+        return {str(k): _to_py(v) for k, v in obj.items()}
+    if isinstance(obj, (list, tuple)):
+        return [_to_py(x) for x in obj]
+    return obj
+
+def build_2d_records(twod_bbox_data):
+    """
+    Your 2D data rows look like:
+      (semanticId, x_min, y_min, x_max, y_max, visibility_or_occlusion)
+    Info has bboxIds + primPaths aligned by row index.
+    """
+    if twod_bbox_data is None:
+        return []
+
+    data = twod_bbox_data.get("data", None)
+    info = twod_bbox_data.get("info", {}) or {}
+
+    if data is None or len(data) == 0:
+        return []
+
+    data = np.asarray(data)
+    bbox_ids = np.asarray(info.get("bboxIds", np.arange(len(data))), dtype=np.uint32)
+    prim_paths = info.get("primPaths", [None] * len(data))
+    id_to_labels = info.get("idToLabels", {}) or {}
+
+    records = []
+    for idx, row in enumerate(data):
+        # match your example ordering
+        semantic_id = int(row[0])
+        x_min = float(row[1]); y_min = float(row[2])
+        x_max = float(row[3]); y_max = float(row[4])
+        vis_or_occ = float(row[5])
+
+        bbox_id = int(bbox_ids[idx]) if idx < len(bbox_ids) else idx
+        prim_path = prim_paths[idx] if idx < len(prim_paths) else None
+
+        # labels come as dict like {'1': {'chair': 'red'}, ...}
+        label_dict = id_to_labels.get(str(semantic_id), {})
+
+        records.append({
+            "bbox_id": bbox_id,
+            "semantic_id": semantic_id,
+            "prim_path": prim_path,
+            "label": label_dict,              # keep full dict (e.g., {"chair":"red"})
+            "xyxy": [x_min, y_min, x_max, y_max],
+            "visibility_or_occlusion": vis_or_occ,
+        })
+
+    return records
+def _label_from_idToLabels(idToLabels: dict, sid: int):
+    """
+    idToLabels format example:
+      {'7': {'box': 'box_purple', 'class': 'klt_bin'}, '6': {'table': 'thos'}, ...}
+    We return a compact string label like:
+      "box_purple" (plus class if present -> "box_purple|klt_bin")
+    """
+    d = idToLabels.get(str(int(sid)))
+    if not d:
+        return None
+
+    # prefer 'class' if it is the only key; otherwise pick first non-'class' key as the main label
+    if "class" in d and len(d) == 1:
+        return str(d["class"])
+
+    main_val = None
+    for k, v in d.items():
+        if k == "class":
+            continue
+        main_val = v
+        break
+
+    if main_val is None and "class" in d:
+        main_val = d["class"]
+
+    if main_val is None:
+        return None
+
+    if "class" in d and str(d["class"]) != str(main_val):
+        return f"{main_val}|{d['class']}"
+    return str(main_val)
+
+def build_3d_boxes(Nd_bbox_data, max_abs_extent: float = 1e6):
+    """
+    Your 3D bbox dtype:
+      ('semanticId','x_min','y_min','z_min','x_max','y_max','z_max','transform'(4,4),'occlusionRatio')
+    We keep both AABB and transform. Filter out absurd extents (background artifacts).
+    """
+    data = Nd_bbox_data.get("data", None)
+    info = Nd_bbox_data.get("info", {}) or {}
+    idToLabels = info.get("idToLabels", {}) or {}
+    primPaths = info.get("primPaths", None)
+
+    boxes = []
+    if data is None or len(data) == 0:
+        return boxes
+
+    # structured array rows: access by field name
+    for idx, row in enumerate(data):
+        sid = int(row["semanticId"])
+        x_min = float(row["x_min"]); y_min = float(row["y_min"]); z_min = float(row["z_min"])
+        x_max = float(row["x_max"]); y_max = float(row["y_max"]); z_max = float(row["z_max"])
+        occ = float(row["occlusionRatio"])
+
+        # filter NaNs / inf / absurd extents (your ~2.25e15 rows)
+        vals = np.array([x_min, y_min, z_min, x_max, y_max, z_max], dtype=np.float64)
+        if not np.isfinite(vals).all():
+            continue
+        if np.max(np.abs(vals)) > max_abs_extent:
+            continue
+
+        T = np.asarray(row["transform"], dtype=np.float32).tolist()  # 4x4
+
+        label = _label_from_idToLabels(idToLabels, sid)
+        prim = primPaths[idx] if isinstance(primPaths, (list, tuple)) and idx < len(primPaths) else None
+
+        boxes.append({
+            "semantic_id": sid,
+            "label": label,
+            "prim_path": prim,
+            "aabb_xyzmin_xyzmax": [x_min, y_min, z_min, x_max, y_max, z_max],
+            "transform_4x4": T,
+            "occlusion_ratio": occ,
+        })
+    return boxes
 # ---------------------- Camera ----------------------
 camera = Camera(
     prim_path="/World/Camera",
@@ -190,9 +328,9 @@ print("afeter focal length:", focal_length.Get())
 
 # ---------------------- Keyframes ----------------------
 keyframes_move = [
-    # {'time': 0, 'translation': [-3, -2, 1], 'euler_angles': [0, 20, 30]},
-    # {'time': 10, 'translation': [0, -2, 1], 'euler_angles': [0, 20, 60]},
-    # {'time': 20, 'translation': [1, -2, 1], 'euler_angles': [0, 20, 90]},
+    # {'time': 0, 'translation': [0, 2.5, 2], 'euler_angles': [0, 30, -30]},
+    # {'time': 10, 'translation': [-2.5, 0, 2], 'euler_angles': [0, 30, 0]},
+    # {'time': 20, 'translation': [0, -2.5, 2], 'euler_angles': [0, 30, 35]},
     # {'time': 30, 'translation': [1, 0, 3], 'euler_angles': [0, 90, 0]},
     # {'time': 40, 'translation': [1, 0, 3], 'euler_angles': [0, 55, 0]},
     # {'time': 50, 'translation': [1, 0, 3], 'euler_angles': [0, 55, 60]},
@@ -208,10 +346,15 @@ keyframes_move = [
     # {'time': 27, 'translation': [4.5, 4, 1.5], 'euler_angles': [0, 20, 240]},
     # {'time': 42, 'translation': [4.5, 4, 1.5], 'euler_angles': [0, 20, 360]},
     
-    {'time': 0, 'translation': [0, 4, 1.5], 'euler_angles': [0, 20, 0]},
-    {'time': 10, 'translation': [4.5, 4, 1.5], 'euler_angles': [0, 20, 20]},
-    {'time': 20, 'translation': [6.5, 6, 1.5], 'euler_angles': [0, 20, -40]},
-    {'time': 30, 'translation': [7, 5, 1.5], 'euler_angles': [0, 20, -40]},
+    # nav goal move
+    # {'time': 0, 'translation': [0, 4, 1.5], 'euler_angles': [0, 20, 0]},
+    # {'time': 10, 'translation': [4.5, 4, 1.5], 'euler_angles': [0, 20, 20]},
+    # {'time': 20, 'translation': [6.5, 6, 1.5], 'euler_angles': [0, 20, -40]},
+    # {'time': 30, 'translation': [7, 5, 1.5], 'euler_angles': [0, 20, -40]},
+
+    {'time': 0, 'translation': [2, 4, 1.5], 'euler_angles': [0, 20, 0]},
+    {'time': 10, 'translation': [7, 2, 1.5], 'euler_angles': [0, 20, 40]},
+    {'time': 20, 'translation': [8, 3, 1.5], 'euler_angles': [0, 20, 40]}
     
     # {'time': 30, 'translation': [1, 0, 1.5], 'euler_angles': [0, 90, 0]},
 ]
@@ -260,6 +403,9 @@ os.makedirs(base_dir, exist_ok=True)
 image_prefix = "frame"
 depth_prefix = "depth"
 seg_prefix = "semantic"
+twod_box = "2d_box"
+threed_box = "3d_box"
+
 traj_file_path = os.path.join(traj_dir, "traj.txt")
 if not os.path.exists(traj_file_path):
     open(traj_file_path, 'w').close()
@@ -304,16 +450,33 @@ while simulation_app.is_running():
     rgb_ann.attach([render_product_path])
     rgba_image = rgb_ann.get_data()
 
-    # seg_ann = rep.AnnotatorRegistry.get_annotator("semantic_segmentation")
-    # seg_ann.attach([render_product_path])
-    # seg_data = seg_ann.get_data()
-    # seg_info = seg_data['info']['idToLabels']
-    # seg_image = seg_data['data'].astype(np.uint8)
+    seg_ann = rep.AnnotatorRegistry.get_annotator("semantic_segmentation")
+    seg_ann.attach([render_product_path])
+    seg_data = seg_ann.get_data()
+    print(f"seg_data keys: {seg_data['info']}")
+    seg_info = seg_data['info']['idToLabels']
+    seg_image = seg_data['data'].astype(np.uint8)
+
+    threed_bbox = rep.AnnotatorRegistry.get_annotator("bounding_box_3d")
+    threed_bbox.attach([render_product_path])
+    threed_bbox_data = threed_bbox.get_data()
+    # print(f"==============Type threed_bbox_data: {type(threed_bbox_data)}, dir: {dir(threed_bbox_data)}")
+    # print(threed_bbox_data['data'])
+    # print(threed_bbox_data['info'])
+    
+    twod_bbox = rep.AnnotatorRegistry.get_annotator("bounding_box_2d_tight")
+    twod_bbox.attach([render_product_path])
+    twod_bbox_data = twod_bbox.get_data()
+    # print(f"==============Type Nd_bbox_data: {type(twod_bbox_data)}, dir: {dir(twod_bbox_data)}")
+    # print(twod_bbox_data['data'])
+    # print(twod_bbox_data['info'])
 
     img_path = os.path.join(base_dir, f"{image_prefix}{frame_index:06d}.jpg")
     depth_path = os.path.join(base_dir, f"{depth_prefix}{frame_index:06d}.png")
-    # seg_colored_path = os.path.join(base_dir, f"{seg_prefix}{frame_index:06d}.png")
-    # seg_info_path = os.path.join(base_dir, f"{seg_prefix}{frame_index:06d}_info.json")
+    seg_colored_path = os.path.join(base_dir, f"{seg_prefix}{frame_index:06d}.png")
+    seg_info_path = os.path.join(base_dir, f"{seg_prefix}{frame_index:06d}_info.json")
+    threed_box_path = os.path.join(base_dir, f"bboxes{frame_index:06d}_info.json")
+    twod_box_path = os.path.join(base_dir, f"{twod_box}{frame_index:06d}_info.json")
 
     if depth_image.size != 0 and rgba_image.size != 0:
         clipped_depth = np.clip(depth_image, MIN_DEPTH, MAX_DEPTH)
@@ -321,11 +484,11 @@ while simulation_app.is_running():
         depth_image_uint16 = normalized_depth.astype("uint16")
         cv2.imwrite(depth_path, depth_image_uint16)
 
-        # max_seg_id = np.max(seg_image) if seg_image.size > 0 else 0
-        # num_classes = max(max_seg_id + 1, len(seg_info) if seg_info else 0, 1)
-        # color_map = create_color_map(num_classes)
-        # colored_seg_image = apply_color_map(seg_image, color_map)
-        # cv2.imwrite(seg_colored_path, colored_seg_image)
+        max_seg_id = np.max(seg_image) if seg_image.size > 0 else 0
+        num_classes = max(max_seg_id + 1, len(seg_info) if seg_info else 0, 1)
+        color_map = create_color_map(num_classes)
+        colored_seg_image = apply_color_map(seg_image, color_map)
+        cv2.imwrite(seg_colored_path, colored_seg_image)
 
         rgb = rgba_image[:, :, :3]
         bgr = cv2.cvtColor(rgb, cv2.COLOR_RGB2BGR)
@@ -336,15 +499,41 @@ while simulation_app.is_running():
         with open(traj_file_path, "a") as traj_file:
             traj_file.write(' '.join(map(str, T_ros.flatten())) + "\n")
 
-        # enhanced_seg_info = {}
-        # for seg_id, label in seg_info.items():
-        #     seg_id_int = int(seg_id)
-        #     enhanced_seg_info[seg_id] = {
-        #         "label": label,
-        #         "color_bgr": color_map[seg_id_int].tolist() if seg_id_int < len(color_map) else [0, 0, 0]
-        #     }
-        # with open(seg_info_path, "w") as json_file:
-        #     json.dump(enhanced_seg_info, json_file, indent=4)
+        enhanced_seg_info = {}
+        bbox3d_info = {}
+        for seg_id, label in seg_info.items():
+            seg_id_int = int(seg_id)
+            enhanced_seg_info[seg_id] = {
+                "label": label,
+                "color_bgr": color_map[seg_id_int].tolist() if seg_id_int < len(color_map) else [0, 0, 0]
+            }
+
+        # for box_id, 
+        with open(seg_info_path, "w") as json_file:
+            json.dump(enhanced_seg_info, json_file, indent=4)
+
+        # 2) parse bbox annotators
+        boxes2d = build_2d_records(twod_bbox_data)
+        # print(threed_bbox_data)
+        boxes3d = build_3d_boxes(threed_bbox_data)
+        
+        # print(boxes2d)
+        # print(boxes3d)
+        boxes = {
+            "bboxes": {
+                "bbox_2d_tight": {
+                    "boxes": boxes2d,
+                },
+                "bbox_3d": {
+                    "boxes": boxes3d,
+                }
+            }
+        }
+        
+        with open(threed_box_path, "w") as f:
+            json.dump(boxes, f, indent=4)
+        # save json
+
 
     frame_index += 1
 
